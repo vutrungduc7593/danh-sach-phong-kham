@@ -17,12 +17,10 @@ Apify.main(async () => {
     await page.goto('http://thongtin.medinet.org.vn/Gi%E1%BA%A5y-ph%C3%A9p-ho%E1%BA%A1t-%C4%91%E1%BB%99ng');
 
     console.log("Parsing Data...");
-    // const LAST_PAGE = 752;
-    let nextPage = 2;
-    const LAST_PAGE = 3;
     let data = "Tên cơ sở;Số giấy phép;Địa chỉ;Ngày cấp;Tình trạng\n";
+    let $nextPage = undefined;
 
-    do {
+    while (true) {
         // Parse Data
         const pageData = await page.$$eval('#dnn_ctr422_TimKiemGPHD_grvGPHN tbody tr', $stores => {
             let scrapedData = "";
@@ -42,12 +40,38 @@ Apify.main(async () => {
         data += pageData;
 
         // Go to next page
-        $nextPage = await page.$("#dnn_ctr422_TimKiemGPHD_rptPager_lnkPage_" + nextPage++);
+        const currentPageId = await page.$eval("a.aspNetDisabled", e => e.id);
+
+        let nextPageId = undefined;
+
+        switch (currentPageId) {
+            case "dnn_ctr422_TimKiemGPHD_rptPager_lnkPage_0":
+                nextPageId = "#dnn_ctr422_TimKiemGPHD_rptPager_lnkPage_2";
+                break;
+
+            case "dnn_ctr422_TimKiemGPHD_rptPager_lnkPage_11":
+                // End of page, ignore
+                break;
+            
+            // Special cases
+            case undefined:
+                break;
+            case null:
+                break;
+
+            default:
+                nextPageId = "#dnn_ctr422_TimKiemGPHD_rptPager_lnkPage_" + (Number(currentPageId.split("_").pop()) + 1);
+                break;
+        }
+
+        $nextPage = await page.$(nextPageId);
+
+        if (!$nextPage) break;
 
         await $nextPage.click();
 
         await page.waitForNavigation();
-    } while (nextPage <= LAST_PAGE + 1);
+    }
     
     console.log('Saving output...');
     // console.log(data);
