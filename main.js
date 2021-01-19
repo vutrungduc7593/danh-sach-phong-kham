@@ -20,7 +20,7 @@ Apify.main(async () => {
     // const LAST_PAGE = 752;
     let nextPage = 2;
     const LAST_PAGE = 3;
-    let data = "Tên cơ sở,Số giấy phép,Địa chỉ,Ngày cấp,Tình trạng\n";
+    let data = "Tên cơ sở;Số giấy phép;Địa chỉ;Ngày cấp;Tình trạng\n";
 
     do {
         // Parse Data
@@ -33,7 +33,7 @@ Apify.main(async () => {
     
                 if (!$td) return;
     
-                scrapedData += `${$store.querySelector('td:nth-child(2)').innerText},${$store.querySelector('td:nth-child(3)').innerText},${$store.querySelector('td:nth-child(4)').innerText},${$store.querySelector('td:nth-child(5)').innerText},${$store.querySelector('td:nth-child(6)').innerText}\n`
+                scrapedData += `${$store.querySelector('td:nth-child(2)').innerText};${$store.querySelector('td:nth-child(3)').innerText};${$store.querySelector('td:nth-child(4)').innerText};${$store.querySelector('td:nth-child(5)').innerText};${$store.querySelector('td:nth-child(6)').innerText}\n`
             });
     
             return scrapedData;
@@ -51,7 +51,9 @@ Apify.main(async () => {
     
     console.log('Saving output...');
     // console.log(data);
-    await fs.writeFileSync("khong-kham.csv", data, {
+    const currentTime = Date.now();
+
+    await fs.writeFileSync(`danh-sach-phong-kham_${currentTime}.csv`, data, {
         encoding: 'utf-8'
     });
 
